@@ -7,6 +7,7 @@ const config = require("config");
 // mongoose models
 const Profile = require("../../models/Profile");
 const User = require("../../models/User");
+const Post = require("../../models/Post");
 
 // validators
 const { check, validationResult } = require("express-validator");
@@ -25,6 +26,7 @@ router.get("/me", auth, async (req, res) => {
         msg: "There is no profile for this user",
       });
     }
+    res.json(profile);
   } catch (error) {
     console.log(error.message);
     res.status(500).send("Server Error");
@@ -91,6 +93,7 @@ router.post(
 
     try {
       let profile = await Profile.findOne({ user: req.user.id });
+      console.log("Profile fields:", profileFields);
 
       if (profile) {
         // update
@@ -164,6 +167,8 @@ router.get("/user/:user_id", async (req, res) => {
 // @access private
 router.delete("/", auth, async (req, res) => {
   try {
+    // remove user posts
+    await Post.deleteMany({ user: req.user.id });
     await Profile.findOneAndRemove({
       user: req.user.id,
     });
